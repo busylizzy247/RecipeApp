@@ -1,7 +1,9 @@
+import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { ActivityIndicator, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 export default function AddRecipeScreen() {
+    const router = useRouter();
     const [url, setUrl] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
@@ -66,8 +68,11 @@ Return only a JSON array of steps like this:
             const jsonMatch = stepsText.match(/\[[\s\S]*\]/);
             if (!jsonMatch) throw new Error('No valid steps returned');
             const steps = JSON.parse(jsonMatch[0]);
-            console.log('Steps:', steps);
-            setError('Recipe processed! Check the console.');
+            console.log('Navigating with steps:', steps.length);
+            router.push({
+                pathname: '/recipe',
+                params: { steps: JSON.stringify(steps) },
+            });
         } catch (err) {
             setError('Something went wrong. Please try again.');
             console.error(err);

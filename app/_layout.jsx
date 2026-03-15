@@ -25,8 +25,9 @@ export default function RootLayout() {
         if (loading) return;
 
         const inTabsGroup = segments[0] === '(tabs)';
+        const inRecipe = segments[0] === 'recipe';
 
-        if (session && !inTabsGroup) {
+        if (session && !inTabsGroup && !inRecipe) {
             router.replace('/(tabs)');
         } else if (!session && inTabsGroup) {
             router.replace('/auth');
