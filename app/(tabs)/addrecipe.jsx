@@ -1,6 +1,7 @@
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { ActivityIndicator, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { supabase } from '../../lib/supabase';
 
 export default function AddRecipeScreen() {
     const router = useRouter();
@@ -51,11 +52,14 @@ Rules:
 Webpage content:
 ${html.substring(0, 15000)}
 
-Return only a JSON array of steps like this:
-[
-  { "type": "prep", "step": "Chop the onion into small pieces on a board" },
-  { "type": "cook", "step": "Heat oil in a pan on medium heat" }
-]`,
+Return only a JSON object like this:
+{
+  "name": "The name of the recipe",
+  "steps": [
+    { "type": "prep", "step": "Chop the onion into small pieces on a board" },
+    { "type": "cook", "step": "Heat oil in a pan on medium heat" }
+  ]
+}`,
                         },
                     ],
                 }),
@@ -71,13 +75,25 @@ Return only a JSON array of steps like this:
             const stepsText = claudeData.content[0].text;
             console.log('Raw Claude text:', stepsText);
 
-            const jsonMatch = stepsText.match(/\[[\s\S]*\]/);
+            const jsonMatch = stepsText.match(/\{[\s\S]*\}/);
             if (!jsonMatch) throw new Error('No valid steps returned');
-            const steps = JSON.parse(jsonMatch[0]);
+            const recipe = JSON.parse(jsonMatch[0]);
+            const steps = recipe.steps;
+            const name = recipe.name;
             console.log('Navigating with steps:', steps.length);
+
+            const { data: { user } } = await supabase.auth.getUser();
+            console.log('Saving recipe for user:', user.id);
+            const { error: saveError } = await supabase.from('Recipes').insert({
+                name,
+                steps: JSON.stringify(steps),
+                user_id: user.id,
+            });
+            console.log('Save error:', saveError);
+
             router.push({
                 pathname: '/recipe',
-                params: { steps: JSON.stringify(steps) },
+                params: { steps: JSON.stringify(steps), name },
             });
         } catch (err) {
             setError('Something went wrong. Please try again.');

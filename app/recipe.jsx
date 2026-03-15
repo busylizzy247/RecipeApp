@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 export default function RecipeScreen() {
-    const { steps: stepsJson } = useLocalSearchParams();
+    const { steps: stepsJson, name } = useLocalSearchParams();
     const steps = JSON.parse(stepsJson);
     const [ticked, setTicked] = useState({});
     const router = useRouter();
@@ -44,6 +44,7 @@ export default function RecipeScreen() {
                 <Text style={styles.backButtonText}>← Back</Text>
             </TouchableOpacity>
 
+            {name && <Text style={styles.recipeName}>{name}</Text>}
             <Text style={styles.progressText}>{tickedCount} of {totalSteps} steps done</Text>
 
             <Text style={styles.sectionTitle}>Preparation</Text>
@@ -197,5 +198,12 @@ const styles = StyleSheet.create({
         color: '#5C7A4E',
         fontSize: 16,
         fontWeight: 'bold',
+    },
+    recipeName: {
+        fontSize: 24,
+        fontWeight: 'bold',
+        color: '#2C2C2C',
+        marginBottom: 4,
+        marginTop: 8,
     },
 });
