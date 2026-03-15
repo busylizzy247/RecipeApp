@@ -16,9 +16,11 @@ export default function AddRecipeScreen() {
         setLoading(true);
         setError('');
         try {
+            console.log('Starting fetch of URL:', url);
             // Step 1: Fetch the recipe page content
             const pageResponse = await fetch(url);
-            const html = await pageResponse.text();
+            const html = await pageResponse.text().catch(() => '');
+            console.log('HTML length:', html.length);
 
             // Step 2: Send to Claude to process
             const claudeResponse = await fetch('https://api.anthropic.com/v1/messages', {
@@ -61,10 +63,14 @@ Return only a JSON array of steps like this:
 
             const claudeData = await claudeResponse.json();
             console.log('Claude response:', JSON.stringify(claudeData));
+
             if (claudeData.type === 'error') {
                 throw new Error(claudeData.error.message);
             }
+
             const stepsText = claudeData.content[0].text;
+            console.log('Raw Claude text:', stepsText);
+
             const jsonMatch = stepsText.match(/\[[\s\S]*\]/);
             if (!jsonMatch) throw new Error('No valid steps returned');
             const steps = JSON.parse(jsonMatch[0]);

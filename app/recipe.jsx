@@ -1,4 +1,4 @@
-import { useLocalSearchParams } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
@@ -6,6 +6,7 @@ export default function RecipeScreen() {
     const { steps: stepsJson } = useLocalSearchParams();
     const steps = JSON.parse(stepsJson);
     const [ticked, setTicked] = useState({});
+    const router = useRouter();
 
     function toggleTick(index) {
         setTicked(prev => ({
@@ -16,9 +17,35 @@ export default function RecipeScreen() {
 
     const prepSteps = steps.filter(s => s.type === 'prep');
     const cookSteps = steps.filter(s => s.type === 'cook');
+    const totalSteps = steps.length;
+    const tickedCount = Object.values(ticked).filter(Boolean).length;
+    const allDone = tickedCount === totalSteps;
+
+    if (allDone) {
+        return (
+            <View style={styles.completionContainer}>
+                <Text style={styles.completionEmoji}>🍽️</Text>
+                <Text style={styles.completionTitle}>Well done!</Text>
+                <Text style={styles.completionSubtitle}>You've completed every step. Enjoy your meal!</Text>
+                <TouchableOpacity style={styles.button} onPress={() => router.replace('/(tabs)/addrecipe')}>
+                    <Text style={styles.buttonText}>Cook Another Recipe</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.buttonOutline} onPress={() => router.replace('/(tabs)')}>
+                    <Text style={styles.buttonOutlineText}>Go Home</Text>
+                </TouchableOpacity>
+            </View>
+        );
+    }
 
     return (
         <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+
+            <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
+                <Text style={styles.backButtonText}>← Back</Text>
+            </TouchableOpacity>
+
+            <Text style={styles.progressText}>{tickedCount} of {totalSteps} steps done</Text>
+
             <Text style={styles.sectionTitle}>Preparation</Text>
             {prepSteps.map((item, index) => (
                 <TouchableOpacity
@@ -61,6 +88,19 @@ const styles = StyleSheet.create({
     },
     content: {
         padding: 24,
+    },
+    backButton: {
+        marginBottom: 8,
+    },
+    backButtonText: {
+        fontSize: 16,
+        color: '#5C7A4E',
+        fontWeight: 'bold',
+    },
+    progressText: {
+        fontSize: 14,
+        color: '#8C8C7A',
+        marginBottom: 8,
     },
     sectionTitle: {
         fontSize: 22,
@@ -107,5 +147,55 @@ const styles = StyleSheet.create({
     },
     stepTextTicked: {
         color: '#8C8C7A',
+    },
+    completionContainer: {
+        flex: 1,
+        backgroundColor: '#FAFAF7',
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingHorizontal: 32,
+    },
+    completionEmoji: {
+        fontSize: 64,
+        marginBottom: 24,
+    },
+    completionTitle: {
+        fontSize: 36,
+        fontWeight: 'bold',
+        color: '#2C2C2C',
+        marginBottom: 12,
+    },
+    completionSubtitle: {
+        fontSize: 16,
+        color: '#8C8C7A',
+        textAlign: 'center',
+        lineHeight: 24,
+        marginBottom: 32,
+    },
+    button: {
+        width: '100%',
+        backgroundColor: '#5C7A4E',
+        borderRadius: 12,
+        padding: 16,
+        alignItems: 'center',
+        marginBottom: 12,
+    },
+    buttonText: {
+        color: '#fff',
+        fontSize: 16,
+        fontWeight: 'bold',
+    },
+    buttonOutline: {
+        width: '100%',
+        borderWidth: 2,
+        borderColor: '#5C7A4E',
+        borderRadius: 12,
+        padding: 16,
+        alignItems: 'center',
+    },
+    buttonOutlineText: {
+        color: '#5C7A4E',
+        fontSize: 16,
+        fontWeight: 'bold',
     },
 });
